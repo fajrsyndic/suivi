@@ -1,0 +1,537 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Espace Syndic</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F7F6F2; --surface:#FFFFFF; --ink:#22303C; --muted:#5B6B7A; --line:#E3E1DA;
+  --accent:#1F4E78; --accent-ink:#FFFFFF; --chart1:#3D6FA8; --chart2:#C2680F;
+  --ok-bg:#E4F3E9; --ok-ink:#1E6B40; --warn-bg:#FBEFD9; --warn-ink:#8F5400;
+  --bad-bg:#FBE7E5; --bad-ink:#A9271C; --info-bg:#E3EDF7; --info-ink:#2C5E93;
+  --grey-bg:#EAE9E4; --grey-ink:#5F6B76; --tile:#FFFFFF; --shadow:0 1px 2px rgba(34,48,60,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181D; --surface:#1D242C; --ink:#E6EAEE; --muted:#98A5B3; --line:#2C3540;
+    --accent:#7FA8D9; --accent-ink:#10151B; --chart1:#4E86D6; --chart2:#CC7229;
+    --ok-bg:#173527; --ok-ink:#7CCF9C; --warn-bg:#3A2B10; --warn-ink:#E5B567;
+    --bad-bg:#3D1D1A; --bad-ink:#F09A8F; --info-bg:#1B2C3F; --info-ink:#8FB7E3;
+    --grey-bg:#262D35; --grey-ink:#9AA5AF; --tile:#1D242C; --shadow:none;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans Arabic", "Segoe UI", system-ui, sans-serif;
+  font-size:15px; line-height:1.55; padding-inline:16px; padding-block:0 40px;}
+img{max-width:100%;} [hidden]{display:none!important;}
+#app{max-width:960px; margin-inline:auto;}
+.hdr{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding-block:18px 6px;}
+.hgrp{display:flex; align-items:center; gap:12px; min-width:0;}
+.hdr .mark{width:42px; height:42px; border-radius:10px; background:var(--accent); color:var(--accent-ink);
+  display:grid; place-items:center; flex:none;}
+.hdr h1{font-size:20px; font-weight:700; margin:0; letter-spacing:.2px;}
+.hdr .sub{font-size:12.5px; color:var(--muted); margin-top:1px;}
+.hdr .grow{flex:1;}
+.ctl{display:flex; gap:8px; align-items:center;}
+select{font:inherit; font-size:13.5px; padding:7px 10px; border-radius:9px;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink);}
+button{font:inherit; cursor:pointer;}
+.langbtn,.refbtn{font-size:13.5px; padding:7px 12px; border-radius:9px; border:1px solid var(--line);
+  background:var(--surface); color:var(--accent); font-weight:700;}
+button:focus-visible,select:focus-visible,.tab:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.tabs{display:flex; gap:6px; overflow-x:auto; padding-block:12px; position:sticky; top:0;
+  background:var(--bg); z-index:5;}
+.tab{font-size:13.5px; font-weight:500; white-space:nowrap; padding:8px 14px; border-radius:999px;
+  border:1px solid var(--line); background:var(--surface); color:var(--muted);}
+.tab[aria-selected="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:700;}
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-block:6px 16px;}
+.kpi{background:var(--tile); border:1px solid var(--line); border-radius:12px; padding:12px 14px; box-shadow:var(--shadow);}
+.kpi .lab{font-size:12px; color:var(--muted); letter-spacing:.2px;}
+.kpi .val{font-size:21px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px;}
+.kpi .val small{font-size:12.5px; font-weight:500; color:var(--muted);}
+.kpi.ok .val{color:var(--ok-ink);} .kpi.bad .val{color:var(--bad-ink);}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-block-end:14px; box-shadow:var(--shadow);}
+.card h2{font-size:15px; font-weight:700; margin:0 0 10px;}
+.legend{display:flex; gap:14px; font-size:12.5px; color:var(--muted); margin-block-end:6px; flex-wrap:wrap;}
+.legend .sw{display:inline-block; width:10px; height:10px; border-radius:3px; margin-inline-end:5px; vertical-align:-1px;}
+table{border-collapse:collapse; width:100%; font-size:13.5px;}
+.tblwrap{overflow-x:auto;}
+th{font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:500;
+  text-align:start; padding:7px 8px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle;}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+.mcell{width:22px; height:22px; border-radius:6px; display:grid; place-items:center; font-size:11px; font-weight:700; margin-inline:auto;}
+.mO{background:var(--ok-bg); color:var(--ok-ink);} .mN{background:var(--bad-bg); color:var(--bad-ink);}
+.mA{background:var(--grey-bg); color:var(--grey-ink);} .mE{border:1px dashed var(--line);}
+.pill{display:inline-block; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap;}
+.p-ok{background:var(--ok-bg); color:var(--ok-ink);} .p-adv{background:var(--info-bg); color:var(--info-ink);}
+.p-part{background:var(--warn-bg); color:var(--warn-ink);} .p-bad{background:var(--bad-bg); color:var(--bad-ink);}
+.p-grey{background:var(--grey-bg); color:var(--grey-ink);}
+.rcard{display:flex; align-items:center; gap:12px; padding:11px 4px; border-bottom:1px solid var(--line);}
+.rcard:last-child{border-bottom:none;}
+.rnum{width:38px; height:38px; flex:none; border-radius:10px; background:var(--bad-bg); color:var(--bad-ink);
+  display:grid; place-items:center; font-weight:700; font-size:13px;}
+.rname{font-weight:700;} .rmeta{font-size:12.5px; color:var(--muted);}
+.ramt{margin-inline-start:auto; text-align:end;}
+.ramt .a{font-weight:700; color:var(--bad-ink); font-variant-numeric:tabular-nums; white-space:nowrap;}
+.ramt .m{font-size:12px; color:var(--muted); white-space:nowrap;}
+.hbar{display:grid; grid-template-columns:minmax(90px,150px) 1fr auto; gap:10px; align-items:center; padding-block:4px; font-size:13px;}
+.hbar .track{background:var(--grey-bg); border-radius:5px; height:14px; overflow:hidden;}
+.hbar .fill{height:100%; background:var(--chart2); border-radius:0 5px 5px 0; min-width:2px;}
+[dir="rtl"] .hbar .fill{border-radius:5px 0 0 5px;}
+.hbar .v{font-variant-numeric:tabular-nums; color:var(--muted); white-space:nowrap; font-size:12.5px;}
+.tsrow{display:flex; justify-content:space-between; gap:10px; padding-block:7px; border-bottom:1px solid var(--line); font-size:13.5px; align-items:center;}
+.tsrow:last-child{border-bottom:none;}
+.tsrow .v{font-variant-numeric:tabular-nums; font-weight:500; white-space:nowrap;}
+.v.plus{color:var(--ok-ink);} .v.minus{color:var(--bad-ink);}
+.tsrow.total{font-weight:700; border-top:2px solid var(--line);}
+.note{font-size:12.5px; color:var(--muted); background:var(--grey-bg); border-radius:9px; padding:9px 12px; margin-block-start:10px;}
+.banner{border-radius:10px; padding:10px 14px; font-size:13px; font-weight:500; margin-block:4px 12px;}
+.banner.err{background:var(--warn-bg); color:var(--warn-ink);}
+.foot{font-size:12px; color:var(--muted); text-align:center; margin-block-start:22px;}
+.empty{color:var(--muted); font-size:13.5px; padding-block:10px; text-align:center;}
+svg text{font-family:inherit;}
+.chip{display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; background:var(--info-bg); color:var(--info-ink); font-weight:500;}
+.loader{display:grid; place-items:center; padding-block:80px; color:var(--muted); gap:14px; text-align:center;}
+.spin{width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--accent); animation:sp 0.9s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){ .spin{animation-duration:2.5s;} }
+.tab{position:relative;}
+.tbadge{position:absolute; top:-7px; inset-inline-end:-7px; min-width:20px; height:20px; padding-inline:5px;
+  border-radius:999px; background:#C62828; color:#fff; font-size:11.5px; font-weight:700;
+  display:grid; place-items:center; border:2px solid var(--bg);}
+.paybar{position:fixed; bottom:14px; inset-inline:14px; z-index:40; margin-inline:auto; max-width:640px;
+  background:var(--bad-bg); color:var(--bad-ink); border:1.5px solid var(--bad-ink);
+  border-radius:14px; padding:12px 14px; box-shadow:0 6px 24px rgba(0,0,0,.18);
+  display:flex; gap:12px; align-items:center; font-size:13.5px; line-height:1.45;}
+.paybar .ic{font-size:22px; flex:none;}
+.paybar .txt{flex:1; min-width:0;}
+.paybar .txt b{font-weight:700;}
+.paybar .see{flex:none; border:none; background:var(--bad-ink); color:#fff; font-weight:700;
+  font-size:12.5px; padding:8px 13px; border-radius:9px;}
+.paybar .close{flex:none; border:none; background:transparent; color:var(--bad-ink);
+  font-size:17px; font-weight:700; padding:4px 6px;}
+@media (max-width:520px){ .hdr h1{font-size:17px;} .kpi .val{font-size:18px;} }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hdr">
+    <div class="hgrp">
+      <div class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 21V5.5L12 3l8 2.5V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M2.5 21h19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.5 8.5h2M13.5 8.5h2M8.5 12h2M13.5 12h2M8.5 15.5h2M13.5 15.5h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <h1 id="title">Espace Syndic</h1>
+        <div class="sub" id="subtitle"></div>
+      </div>
+    </div>
+    <div class="grow"></div>
+    <div class="ctl">
+      <button class="refbtn" id="refBtn" type="button" title="Actualiser">↻</button>
+      <select id="yearSel" aria-label="Année"></select>
+      <button class="langbtn" id="langBtn" type="button"></button>
+    </div>
+  </header>
+
+  <div class="banner err" id="errBanner" hidden></div>
+
+  <div class="loader" id="loader"><div class="spin" aria-hidden="true"></div><div id="loadTxt">Chargement des données… / جارٍ تحميل البيانات…</div></div>
+
+  <div id="content" hidden>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <main>
+      <section id="pane-apercu" role="tabpanel">
+        <div class="kpis" id="kpis"></div>
+        <div class="card">
+          <h2 id="chartTitle"></h2>
+          <div class="legend" id="chartLegend"></div>
+          <div id="yearChart" class="tblwrap"></div>
+        </div>
+        <div class="card">
+          <h2 id="catTitle"></h2>
+          <div id="catBars"></div>
+        </div>
+      </section>
+      <section id="pane-cotisations" role="tabpanel" hidden>
+        <div class="card">
+          <h2 id="cotTitle"></h2>
+          <div class="tblwrap"><table id="cotTable"></table></div>
+          <div class="note" id="cotNote"></div>
+        </div>
+      </section>
+      <section id="pane-retards" role="tabpanel" hidden>
+        <div class="card">
+          <h2 id="retTitle"></h2>
+          <div id="retList"></div>
+          <div class="note" id="retNote"></div>
+        </div>
+      </section>
+      <section id="pane-depenses" role="tabpanel" hidden>
+        <div class="card">
+          <h2 id="depTitle"></h2>
+          <div class="tblwrap"><table id="depTable"></table></div>
+        </div>
+      </section>
+      <section id="pane-tresorerie" role="tabpanel" hidden>
+        <div class="kpis" id="tsoKpis"></div>
+        <div class="card">
+          <h2 id="tsoTitle"></h2>
+          <div id="tsoDetail"></div>
+        </div>
+        <div class="card" id="autresCard" hidden>
+          <h2 id="autresTitle"></h2>
+          <div id="autresList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <footer class="foot" id="foot"></footer>
+<div class="paybar" id="payBar" hidden role="alert">
+  <span class="ic" aria-hidden="true">⚠️</span>
+  <span class="txt" id="payTxt"></span>
+  <button class="see" id="paySee" type="button"></button>
+  <button class="close" id="payClose" type="button" aria-label="Fermer">✕</button>
+</div>
+
+
+<script>
+"use strict";
+const SHEET_ID = "1_dT3T0PmMIFjzXgy7jTXDRkslIQrEPwS";
+const TAB_NAMES = {prop:"propriétaires", cot:"Cotisations", dep:"Dépenses", tso:"Trésorerie"};
+
+const I18N = {
+fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
+  subtitle:"Suivi transparent de la copropriété", lang:"العربية",
+  tabs:{apercu:"Aperçu", cotisations:"Cotisations", retards:"Retards 4 mois et +", depenses:"Dépenses", tresorerie:"Trésorerie"},
+  kpi:{enc:"Cotisations encaissées", imp:"Impayés à ce jour", dep:"Dépenses de l'année", solde:"Solde de trésorerie",
+       ajour:"À jour ou en avance", ret4:"En retard de 4 mois et +"},
+  of:n=>"sur "+n,
+  chartTitle:"Encaissements et dépenses par année", encaisse:"Encaissé", depense:"Dépenses",
+  catTitle:"Dépenses par catégorie",
+  cotTitle:"Pointage des cotisations",
+  cotNote:"✓ payé au syndic · A (gris) = réglé à l'ancien syndic · ✗ non payé. Le statut est jugé jusqu'au mois en cours.",
+  months:["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"],
+  th:{apt:"Appt", nom:"Copropriétaire", paye:"Payé", statut:"Statut", date:"Date", cat:"Catégorie", desc:"Description", mnt:"Montant", mode:"Mode", total:"Total"},
+  statut:{ok:"À jour", adv:"En avance", part:"Partiel", bad:"Impayé", futur:"À venir"},
+  retTitle:"Copropriétaires en retard de 4 mois et plus",
+  retMois:m=>m+" mois impayés", retDu:"dû", etage:"Étage", abroad:"À l'étranger",
+  retNote:"Retard calculé jusqu'au mois en cours, toutes années confondues. Les mois réglés à l'ancien syndic ne comptent pas comme retard.",
+  retEmpty:"Aucun copropriétaire n'a 4 mois ou plus de retard. 👏",
+  depTitle:"Registre des dépenses",
+  tsoTitle:"Détail de la trésorerie", autresTitle:"Autres recettes et sorties",
+  tso:{ent:"Total des entrées", sor:"Total des sorties", solde:"Solde actuel",
+       init:"Solde initial (reçu de l'ancien syndic)", cotY:y=>"Cotisations encaissées "+y,
+       autresE:"Autres recettes", depY:y=>"Dépenses "+y, autresS:"Autres sorties", total:"Solde actuel"},
+  cats:{"Nettoyage":"Nettoyage","Électricité":"Électricité","Eau":"Eau","Ascenseur":"Ascenseur","Sécurité":"Sécurité","Entretien":"Entretien","Réparation":"Réparation","Travaux":"Travaux","Assurance":"Assurance","Autres":"Autres"},
+  modes:{"Espèces":"Espèces","Chèque":"Chèque","Virement":"Virement","Carte bancaire":"Carte bancaire"},
+  err:"Impossible de lire le tableur du syndic pour le moment — vérifiez votre connexion, puis touchez ↻ pour réessayer.",
+  live:d=>"Chiffres lus en direct du registre du syndic · "+d,
+  empty:"Aucune donnée pour cette année.",
+  payMsg:(n,p)=>`<b>${n} copropriétaire${n>1?"s ont":" a"} 4 mois ou plus d'impayés.</b> Merci de régulariser votre cotisation (${p}/mois) auprès du syndic dans les meilleurs délais.`,
+  paySee:"Voir la liste"},
+ar:{dir:"rtl", locale:"ar-MA", cur:" درهم",
+  subtitle:"تتبع شفاف لتدبير العمارة", lang:"Français",
+  tabs:{apercu:"لمحة عامة", cotisations:"الاشتراكات", retards:"المتأخرون 4 أشهر فأكثر", depenses:"المصاريف", tresorerie:"الخزينة"},
+  kpi:{enc:"الاشتراكات المحصلة", imp:"غير المؤدى إلى اليوم", dep:"مصاريف السنة", solde:"رصيد الخزينة",
+       ajour:"خالصون أو مسبقًا", ret4:"متأخرون 4 أشهر فأكثر"},
+  of:n=>"من "+n,
+  chartTitle:"التحصيلات والمصاريف حسب السنة", encaisse:"المحصل", depense:"المصاريف",
+  catTitle:"المصاريف حسب الفئة",
+  cotTitle:"تأشير الاشتراكات الشهرية",
+  cotNote:"✓ مؤدى للسنديك · ق (رمادي) = مؤدى للسنديك السابق · ✗ غير مؤدى. الحالة تُحتسب إلى غاية الشهر الجاري.",
+  months:["ينا","فبر","مار","أبر","ماي","يون","يول","غشت","شتن","أكت","نون","دجن"],
+  th:{apt:"الشقة", nom:"المالك", paye:"المؤدى", statut:"الحالة", date:"التاريخ", cat:"الفئة", desc:"البيان", mnt:"المبلغ", mode:"الأداء", total:"المجموع"},
+  statut:{ok:"خالص", adv:"خالص مسبقًا", part:"جزئي", bad:"غير خالص", futur:"لاحقًا"},
+  retTitle:"الملاك المتأخرون 4 أشهر فأكثر",
+  retMois:m=>m+" أشهر غير مؤداة", retDu:"المستحق", etage:"الطابق", abroad:"خارج الوطن",
+  retNote:"يُحتسب التأخر إلى غاية الشهر الجاري، لجميع السنوات. الأشهر المؤداة للسنديك السابق لا تُعتبر تأخرًا.",
+  retEmpty:"لا يوجد أي مالك متأخر بأربعة أشهر أو أكثر. 👏",
+  depTitle:"سجل المصاريف",
+  tsoTitle:"تفاصيل الخزينة", autresTitle:"مداخيل ومصاريف أخرى",
+  tso:{ent:"مجموع المداخيل", sor:"مجموع المصاريف", solde:"الرصيد الحالي",
+       init:"الرصيد الأولي (من السنديك السابق)", cotY:y=>"الاشتراكات المحصلة "+y,
+       autresE:"مداخيل أخرى", depY:y=>"مصاريف "+y, autresS:"مصاريف أخرى", total:"الرصيد الحالي"},
+  cats:{"Nettoyage":"النظافة","Électricité":"الكهرباء","Eau":"الماء","Ascenseur":"المصعد","Sécurité":"الحراسة","Entretien":"الصيانة","Réparation":"الإصلاح","Travaux":"الأشغال","Assurance":"التأمين","Autres":"أخرى"},
+  modes:{"Espèces":"نقدًا","Chèque":"شيك","Virement":"تحويل بنكي","Carte bancaire":"بطاقة بنكية"},
+  err:"تعذّرت قراءة سجل السنديك حاليًا — تحقق من الاتصال ثم اضغط ↻ لإعادة المحاولة.",
+  live:d=>"أرقام مقروءة مباشرة من سجل السنديك · "+d,
+  empty:"لا توجد بيانات لهذه السنة.",
+  payMsg:(n,p)=>`<b>${n} من الملاك عليهم 4 أشهر أو أكثر غير مؤداة.</b> المرجو تسوية واجب الاشتراك (${p} شهريًا) لدى السنديك في أقرب وقت.`,
+  paySee:"عرض اللائحة"},
+};
+
+let STATE = null, lang = "fr", year = null, tab = "apercu", loadErr = false;
+try{ lang = localStorage.getItem("es-lang") || "fr"; }catch(e){}
+const NOW = new Date(), NOWY = NOW.getFullYear(), NOWM = NOW.getMonth()+1;
+const TABS = ["apercu","cotisations","depenses","tresorerie","retards"];
+if (TABS.includes(location.hash.slice(1))) tab = location.hash.slice(1);
+
+const T = ()=>I18N[lang];
+const fmt = n => Math.round(n).toLocaleString("fr-MA") + T().cur;
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ---------------- lecture du Google Sheets (valeurs brutes)
+async function gtab(name){
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}&t=${Date.now()}`;
+  const r = await fetch(url, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const t = await r.text();
+  const j = JSON.parse(t.slice(t.indexOf("(")+1, t.lastIndexOf(")")));
+  return j.table.rows.map(row=>(row.c||[]).map(c=>c?c.v:null));
+}
+const gDate = v => { const m = /Date\((\d+),(\d+),(\d+)/.exec(String(v));
+  return m ? new Date(+m[1], +m[2], +m[3]) : null; };
+const asNum = v => typeof v === "number" ? v : (v!=null && v!=="" && !isNaN(+v) ? +v : null);
+
+async function loadData(){
+  const [gp, gc, gd, gt] = await Promise.all(
+    [TAB_NAMES.prop, TAB_NAMES.cot, TAB_NAMES.dep, TAB_NAMES.tso].map(gtab));
+  // propriétaires : lignes dont la 1re cellule commence par "Apt"
+  const owners = gp.filter(r=>String(r[0]||"").trim().startsWith("Apt")).map(r=>({
+    apt:+String(r[0]).replace(/\D+/g,""), nom:String(r[1]||"").trim(),
+    etage:asNum(r[4]) ?? String(r[4]||""), rem:String(r[5]||"").trim()}));
+  // cotisations : repérage dynamique des colonnes par la ligne d'en-tête
+  const hi = gc.findIndex(r=>r.includes("N° appt"));
+  if(hi<0) throw new Error("Onglet Cotisations : en-tête introuvable");
+  const hdr = gc[hi], aptC = hdr.indexOf("N° appt"), anC = aptC-1;
+  let m1 = hdr.indexOf("Janv"); if(m1<0) m1 = aptC+2;
+  let param = 0;
+  const cot = [];
+  for(const r of gc.slice(hi+1)){
+    const apt = String(r[aptC]||"").trim();
+    if(!apt.startsWith("Apt")) continue;
+    const an = asNum(r[anC]); if(!an) continue;
+    const m = []; for(let k=0;k<12;k++){ const v=String(r[m1+k]||"").trim();
+      m.push(v==="Oui"?"O":v==="Non"?"N":v==="Ancien"?"A":""); }
+    const du = asNum(r[m1+12]); if(du && !param) param = Math.round(du/12);
+    cot.push({an, apt:+apt.replace(/\D+/g,""), m});
+  }
+  if(!param) param = 150;
+  // dépenses : lignes dont la 1re cellule est une date
+  const dep = gd.map(r=>({d:gDate(r[0]), r})).filter(x=>x.d).map(({d,r})=>({
+    date:d, cat:String(r[2]||"").trim(), desc:String(r[3]||"").trim(),
+    mnt:asNum(r[4])||0, mode:String(r[5]||"").trim()})).filter(x=>x.mnt>0);
+  // trésorerie : solde initial + section 3 (opérations libres)
+  let init = 0;
+  const iRow = gt.find(r=>String(r[0]||"").includes("Solde initial"));
+  if(iRow){ for(const v of iRow){ const n=asNum(v); if(n!=null){ init=n; break; } } }
+  const s3 = gt.findIndex(r=>String(r[0]||"").trim().startsWith("3)"));
+  const autres = [];
+  if(s3>=0){ for(const r of gt.slice(s3+1)){
+    if(String(r[1]||"").includes("Sous-total")) break;
+    const ent = asNum(r[2])||0, sor = asNum(r[3])||0;
+    if(!ent && !sor) continue;
+    autres.push({date:gDate(r[0]), lib:String(r[1]||"—"), ent, sor});
+  }}
+  return {param, init, owners, cot, dep, autres, fetchedAt:new Date()};
+}
+
+// ---------------- calculs
+const ownerByApt = ()=>Object.fromEntries(STATE.owners.map(o=>[o.apt,o]));
+const dueMonths = y => y<NOWY ? 12 : (y===NOWY ? NOWM : 0);
+const rowStats = r => {
+  const paid = r.m.filter(v=>v==="O").length;
+  const cov  = paid + r.m.filter(v=>v==="A").length;
+  const due  = dueMonths(r.an);
+  let st = "part";
+  if (r.an>NOWY) st="futur"; else if (cov>due) st="adv"; else if (cov>=due) st="ok";
+  else if (cov===0) st="bad";
+  return {paid, cov, due, unpaid: Math.max(0,due-cov), st};
+};
+function retards(){
+  const per = {}, oba = ownerByApt();
+  STATE.cot.forEach(r=>{ const s=rowStats(r); per[r.apt]=(per[r.apt]||0)+s.unpaid; });
+  return Object.entries(per).map(([apt,m])=>({apt:+apt,mois:m,mnt:m*STATE.param,o:oba[+apt]}))
+    .filter(x=>x.mois>=4 && x.o).sort((a,b)=>b.mois-a.mois || a.apt-b.apt);
+}
+const yearsAll = ()=>[...new Set([...STATE.cot.map(r=>r.an), ...STATE.dep.map(d=>d.date.getFullYear())])].sort();
+const encYear = y => STATE.cot.filter(r=>r.an===y).reduce((s,r)=>s+rowStats(r).paid,0)*STATE.param;
+const impYear = y => STATE.cot.filter(r=>r.an===y).reduce((s,r)=>s+rowStats(r).unpaid,0)*STATE.param;
+const depYear = y => STATE.dep.filter(d=>d.date.getFullYear()===y).reduce((s,d)=>s+d.mnt,0);
+const totEnc = () => STATE.cot.reduce((s,r)=>s+rowStats(r).paid,0)*STATE.param;
+const totDep = () => STATE.dep.reduce((s,d)=>s+d.mnt,0);
+const autresE = () => STATE.autres.reduce((s,a)=>s+a.ent,0);
+const autresS = () => STATE.autres.reduce((s,a)=>s+a.sor,0);
+const solde = () => STATE.init + totEnc() + autresE() - totDep() - autresS();
+
+// ---------------- rendu
+function render(){
+  const t = T();
+  $("app").dir = t.dir;
+  document.documentElement.lang = lang;
+  $("subtitle").textContent = t.subtitle + (STATE ? " — " + STATE.owners.length + (lang==="ar"?" شقة":" appartements") : "");
+  $("langBtn").textContent = t.lang;
+  $("loadTxt") && ($("loadTxt").textContent = lang==="ar" ? "جارٍ تحميل البيانات…" : "Chargement des données…");
+  $("errBanner").hidden = !loadErr;
+  $("errBanner").textContent = t.err;
+  if(!STATE){ $("foot").textContent=""; return; }
+
+  const years = yearsAll();
+  if(!years.includes(year)) year = years.includes(NOWY) ? NOWY : years[years.length-1];
+  $("yearSel").innerHTML = years.map(y=>`<option value="${y}" ${y===year?"selected":""}>${y}</option>`).join("");
+  const ret = retards();
+  $("tabs").innerHTML = TABS.map(k =>
+    `<button class="tab" role="tab" id="tab-${k}" aria-selected="${k===tab}" data-k="${k}">${t.tabs[k]}${
+      k==="retards" && ret.length ? `<span class="tbadge">${ret.length}</span>` : ""}</button>`).join("");
+  TABS.forEach(k => { $("pane-"+k).hidden = (k!==tab); });
+
+  // message flottant d'appel au paiement
+  let payHidden = false;
+  try{ payHidden = localStorage.getItem("es-payhide") === new Date().toDateString(); }catch(e){}
+  $("payBar").dir = t.dir;
+  $("payBar").hidden = !(ret.length && !payHidden && tab!=="retards");
+  $("payTxt").innerHTML = t.payMsg(ret.length, fmt(STATE.param));
+  $("paySee").textContent = t.paySee;
+  const rowsY = STATE.cot.filter(r=>r.an===year);
+  const okN = rowsY.filter(r=>["ok","adv"].includes(rowStats(r).st)).length;
+  const nOwn = STATE.owners.length, s = solde();
+  $("kpis").innerHTML = [
+    {l:`${t.kpi.enc} ${year}`, v:fmt(encYear(year)), c:"ok"},
+    {l:`${t.kpi.imp} (${year})`, v:fmt(impYear(year)), c: impYear(year)>0?"bad":"ok"},
+    {l:`${t.kpi.dep} ${year}`, v:fmt(depYear(year)), c:""},
+    {l:t.kpi.solde, v:fmt(s), c: s<0?"bad":"ok"},
+    {l:t.kpi.ajour+" ("+year+")", v:`${okN} <small>${t.of(nOwn)}</small>`, c:"ok"},
+    {l:t.kpi.ret4, v:`${ret.length} <small>${t.of(nOwn)}</small>`, c: ret.length?"bad":"ok"},
+  ].map(k=>`<div class="kpi ${k.c}"><div class="lab">${k.l}</div><div class="val">${k.v}</div></div>`).join("");
+
+  $("chartTitle").textContent = t.chartTitle;
+  $("chartLegend").innerHTML =
+    `<span><span class="sw" style="background:var(--chart1)"></span>${t.encaisse}</span>`+
+    `<span><span class="sw" style="background:var(--chart2)"></span>${t.depense}</span>`;
+  const vals = years.map(y=>({y, e:encYear(y), d:depYear(y)}));
+  const max = Math.max(1, ...vals.flatMap(v=>[v.e,v.d]));
+  const W=560, H=210, P={t:14,r:10,b:26,l:8}, ih=H-P.t-P.b;
+  const gw=(W-P.l-P.r)/Math.max(1,vals.length), bw=Math.min(38,gw/3);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:320px" role="img" aria-label="${t.chartTitle}">`;
+  for(let i=1;i<=3;i++){ const gy=P.t+ih-ih*i/3;
+    svg+=`<line x1="${P.l}" x2="${W-P.r}" y1="${gy}" y2="${gy}" stroke="var(--line)" stroke-width="1"/>`;}
+  svg+=`<line x1="${P.l}" x2="${W-P.r}" y1="${P.t+ih}" y2="${P.t+ih}" stroke="var(--muted)" stroke-width="1"/>`;
+  vals.forEach((v,i)=>{
+    const cx=P.l+gw*i+gw/2;
+    [["e","--chart1",t.encaisse],["d","--chart2",t.depense]].forEach(([k,c,lab],j)=>{
+      const h=ih*v[k]/max, x=cx+(j===0?-bw-2:2), y=P.t+ih-h;
+      svg+=`<g><rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h,1)}" rx="4" fill="var(${c})">`+
+           `<title>${lab} ${v.y} : ${fmt(v[k])}</title></rect>`+
+           (v[k]>0?`<text x="${x+bw/2}" y="${y-4}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${(v[k]/1000).toFixed(v[k]>=10000?0:1)}k</text>`:"")+`</g>`;
+    });
+    svg+=`<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">${v.y}</text>`;
+  });
+  svg+="</svg>";
+  $("yearChart").innerHTML = svg;
+
+  $("catTitle").textContent = `${t.catTitle} — ${year}`;
+  const byCat = {};
+  STATE.dep.filter(d=>d.date.getFullYear()===year).forEach(d=>{ byCat[d.cat]=(byCat[d.cat]||0)+d.mnt; });
+  const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const cmax = Math.max(1,...cats.map(c=>c[1]));
+  $("catBars").innerHTML = cats.length ? cats.map(([c,v])=>
+    `<div class="hbar"><span>${esc(t.cats[c]||c)}</span>`+
+    `<div class="track"><div class="fill" style="width:${Math.max(2,100*v/cmax)}%"></div></div>`+
+    `<span class="v">${fmt(v)}</span></div>`).join("")
+    : `<div class="empty">${t.empty}</div>`;
+
+  $("cotTitle").textContent = `${t.cotTitle} — ${year}`;
+  $("cotNote").textContent = t.cotNote;
+  const stPill = st => `<span class="pill p-${({ok:"ok",adv:"adv",part:"part",bad:"bad",futur:"grey"})[st]}">${t.statut[st]}</span>`;
+  const sym = v => v==="O"?"✓":v==="A"?(lang==="ar"?"ق":"A"):v==="N"?"✗":"";
+  const cls = v => v==="O"?"mO":v==="A"?"mA":v==="N"?"mN":"mE";
+  const oba = ownerByApt();
+  const rows = STATE.cot.filter(r=>r.an===year).sort((a,b)=>a.apt-b.apt);
+  $("cotTable").innerHTML =
+    `<tr><th>${t.th.apt}</th><th>${t.th.nom}</th>${t.months.map(m=>`<th style="text-align:center">${m}</th>`).join("")}<th>${t.th.paye}</th><th>${t.th.statut}</th></tr>`+
+    (rows.length ? rows.map(r=>{ const s=rowStats(r); const o=oba[r.apt]||{nom:"?"};
+      return `<tr><td class="num">${r.apt}</td><td style="white-space:nowrap">${esc(o.nom)}</td>`+
+        r.m.map(v=>`<td><span class="mcell ${cls(v)}">${sym(v)}</span></td>`).join("")+
+        `<td class="num">${fmt(s.paid*STATE.param)}</td><td>${stPill(s.st)}</td></tr>`; }).join("")
+     : `<tr><td colspan="16" class="empty">${t.empty}</td></tr>`);
+
+  $("retTitle").textContent = t.retTitle;
+  $("retNote").textContent = t.retNote;
+  $("retList").innerHTML = ret.length ? ret.map(x=>
+    `<div class="rcard"><div class="rnum">${x.mois}</div>`+
+    `<div><div class="rname">${esc(x.o.nom)} ${x.o.rem?`<span class="chip">${lang==="ar"?esc(x.o.rem):t.abroad}</span>`:""}</div>`+
+    `<div class="rmeta">${t.th.apt} ${x.apt} · ${t.etage} ${esc(x.o.etage)} · ${t.retMois(x.mois)}</div></div>`+
+    `<div class="ramt"><div class="a">${fmt(x.mnt)}</div><div class="m">${t.retDu}</div></div></div>`).join("")
+    : `<div class="empty">${t.retEmpty}</div>`;
+
+  $("depTitle").textContent = `${t.depTitle} — ${year}`;
+  const deps = STATE.dep.filter(d=>d.date.getFullYear()===year);
+  const dtot = deps.reduce((s,d)=>s+d.mnt,0);
+  $("depTable").innerHTML =
+    `<tr><th>${t.th.date}</th><th>${t.th.cat}</th><th>${t.th.desc}</th><th>${t.th.mnt}</th><th>${t.th.mode}</th></tr>`+
+    (deps.length ? deps.map(d=>
+      `<tr><td class="num">${d.date.toLocaleDateString(t.locale)}</td>`+
+      `<td><span class="pill p-grey">${esc(t.cats[d.cat]||d.cat)}</span></td>`+
+      `<td>${esc(d.desc)}</td><td class="num">${fmt(d.mnt)}</td><td>${esc(t.modes[d.mode]||d.mode)}</td></tr>`).join("")+
+      `<tr><td></td><td></td><td style="font-weight:700">${t.th.total}</td><td class="num" style="font-weight:700">${fmt(dtot)}</td><td></td></tr>`
+     : `<tr><td colspan="5" class="empty">${t.empty}</td></tr>`);
+
+  const ent = totEnc()+autresE(), sor = totDep()+autresS();
+  $("tsoKpis").innerHTML = [
+    {l:t.tso.ent, v:fmt(STATE.init+ent), c:"ok"},
+    {l:t.tso.sor, v:fmt(sor), c:"bad"},
+    {l:t.tso.solde, v:fmt(solde()), c:solde()<0?"bad":"ok"},
+  ].map(k=>`<div class="kpi ${k.c}"><div class="lab">${k.l}</div><div class="val">${k.v}</div></div>`).join("");
+  $("tsoTitle").textContent = t.tsoTitle;
+  let dRows = [[t.tso.init, STATE.init, +1]];
+  years.forEach(y=>{ const e=encYear(y); if(e||y<=NOWY) dRows.push([t.tso.cotY(y), e, +1]); });
+  if (autresE()) dRows.push([t.tso.autresE, autresE(), +1]);
+  years.forEach(y=>{ const d=depYear(y); if(d) dRows.push([t.tso.depY(y), d, -1]); });
+  if (autresS()) dRows.push([t.tso.autresS, autresS(), -1]);
+  $("tsoDetail").innerHTML = dRows.map(([l,v,sg])=>
+    `<div class="tsrow"><span>${l}</span><span class="v ${sg>0?"plus":"minus"}">${sg>0?"+":"−"} ${fmt(v)}</span></div>`).join("")+
+    `<div class="tsrow total"><span>${t.tso.total}</span><span class="v ${solde()<0?"minus":"plus"}">${fmt(solde())}</span></div>`;
+  $("autresCard").hidden = !STATE.autres.length;
+  $("autresList").innerHTML = STATE.autres.map(a=>{
+    const v = a.ent ? [a.ent,"plus","+"] : [a.sor,"minus","−"];
+    return `<div class="tsrow"><span>${esc(a.lib)} <span class="rmeta">${a.date?a.date.toLocaleDateString(t.locale):""}</span></span>`+
+      `<span class="v ${v[1]}">${v[2]} ${fmt(v[0])}</span></div>`;}).join("");
+
+  $("foot").textContent = t.live(STATE.fetchedAt.toLocaleString(t.locale));
+}
+
+// ---------------- événements
+document.addEventListener("click", e=>{
+  const tb = e.target.closest(".tab");
+  if(tb){ tab = tb.dataset.k; try{history.replaceState(null,"","#"+tab);}catch(err){} render(); }
+});
+$("langBtn").addEventListener("click", ()=>{
+  lang = lang==="fr" ? "ar" : "fr";
+  try{ localStorage.setItem("es-lang", lang); }catch(e){}
+  render();
+});
+$("yearSel").addEventListener("change", e=>{ year = +e.target.value; render(); });
+$("refBtn").addEventListener("click", ()=>boot());
+$("paySee").addEventListener("click", ()=>{
+  tab = "retards";
+  try{history.replaceState(null,"","#retards");}catch(e){}
+  render(); window.scrollTo({top:0});
+});
+$("payClose").addEventListener("click", ()=>{
+  try{ localStorage.setItem("es-payhide", new Date().toDateString()); }catch(e){}
+  $("payBar").hidden = true;
+});
+
+async function boot(){
+  $("loader").hidden = false; $("content").hidden = true; loadErr = false;
+  render();
+  try{
+    STATE = await loadData();
+  }catch(e){ loadErr = true; }
+  $("loader").hidden = true;
+  $("content").hidden = !STATE;
+  render();
+}
+render();
+boot();
+</script>
+</body>
+</html>
