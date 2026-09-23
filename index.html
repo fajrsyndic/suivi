@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Espace Syndic</title>
+<title>Espace Syndic — Résidence AL FAJR</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap">
 <style>
 :root{
@@ -12,6 +12,7 @@
   --ok-bg:#E4F3E9; --ok-ink:#1E6B40; --warn-bg:#FBEFD9; --warn-ink:#8F5400;
   --bad-bg:#FBE7E5; --bad-ink:#A9271C; --info-bg:#E3EDF7; --info-ink:#2C5E93;
   --grey-bg:#EAE9E4; --grey-ink:#5F6B76; --tile:#FFFFFF; --shadow:0 1px 2px rgba(34,48,60,.06);
+  --fajr:#B8730F;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){
@@ -21,6 +22,7 @@
     --ok-bg:#173527; --ok-ink:#7CCF9C; --warn-bg:#3A2B10; --warn-ink:#E5B567;
     --bad-bg:#3D1D1A; --bad-ink:#F09A8F; --info-bg:#1B2C3F; --info-ink:#8FB7E3;
     --grey-bg:#262D35; --grey-ink:#9AA5AF; --tile:#1D242C; --shadow:none;
+    --fajr:#E5A054;
     color-scheme: dark;
   }
 }
@@ -34,7 +36,8 @@ img{max-width:100%;} [hidden]{display:none!important;}
 .hgrp{display:flex; align-items:center; gap:12px; min-width:0;}
 .hdr .mark{width:42px; height:42px; border-radius:10px; background:var(--accent); color:var(--accent-ink);
   display:grid; place-items:center; flex:none;}
-.hdr h1{font-size:20px; font-weight:700; margin:0; letter-spacing:.2px;}
+.hdr h1{font-size:20px; font-weight:700; margin:0; letter-spacing:.2px; text-wrap:balance;}
+.hdr h1 .resid{color:var(--fajr);}
 .hdr .sub{font-size:12.5px; color:var(--muted); margin-top:1px;}
 .hdr .grow{flex:1;}
 .ctl{display:flex; gap:8px; align-items:center;}
@@ -208,6 +211,7 @@ const TAB_NAMES = {prop:"propriétaires", cot:"Cotisations", dep:"Dépenses", ts
 
 const I18N = {
 fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
+  title:'Espace Syndic <span class="resid">· Immeuble A — Résidence AL FAJR</span>',
   subtitle:"Suivi transparent de la copropriété", lang:"العربية",
   tabs:{apercu:"Aperçu", cotisations:"Cotisations", retards:"Retards 4 mois et +", depenses:"Dépenses", tresorerie:"Trésorerie"},
   kpi:{enc:"Cotisations encaissées", imp:"Impayés à ce jour", dep:"Dépenses de l'année", solde:"Solde de trésorerie",
@@ -218,7 +222,7 @@ fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
   cotTitle:"Pointage des cotisations",
   cotNote:"✓ payé au syndic · A (gris) = réglé à l'ancien syndic · ✗ non payé. Le statut est jugé jusqu'au mois en cours.",
   months:["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"],
-  th:{apt:"Appt", nom:"Copropriétaire", paye:"Payé", statut:"Statut", date:"Date", cat:"Catégorie", desc:"Description", mnt:"Montant", mode:"Mode", total:"Total"},
+  th:{apt:"Appt", nom:"Copropriétaire", paye:"Encaissé (nouveau syndic)", statut:"Statut", date:"Date", cat:"Catégorie", desc:"Description", mnt:"Montant", mode:"Mode", total:"Total"},
   statut:{ok:"À jour", adv:"En avance", part:"Partiel", bad:"Impayé", futur:"À venir"},
   retTitle:"Copropriétaires en retard de 4 mois et plus",
   retMois:m=>m+" mois impayés", retDu:"dû", etage:"Étage", abroad:"À l'étranger",
@@ -237,6 +241,7 @@ fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
   payMsg:(n,p)=>`<b>${n} copropriétaire${n>1?"s ont":" a"} 4 mois ou plus d'impayés.</b> Merci de régulariser votre cotisation (${p}/mois) auprès du syndic dans les meilleurs délais.`,
   paySee:"Voir la liste"},
 ar:{dir:"rtl", locale:"ar-MA", cur:" درهم",
+  title:'فضاء السنديك <span class="resid">· عمارة A — إقامة الفجر</span>',
   subtitle:"تتبع شفاف لتدبير العمارة", lang:"Français",
   tabs:{apercu:"لمحة عامة", cotisations:"الاشتراكات", retards:"المتأخرون 4 أشهر فأكثر", depenses:"المصاريف", tresorerie:"الخزينة"},
   kpi:{enc:"الاشتراكات المحصلة", imp:"غير المؤدى إلى اليوم", dep:"مصاريف السنة", solde:"رصيد الخزينة",
@@ -247,7 +252,7 @@ ar:{dir:"rtl", locale:"ar-MA", cur:" درهم",
   cotTitle:"تأشير الاشتراكات الشهرية",
   cotNote:"✓ مؤدى للسنديك · ق (رمادي) = مؤدى للسنديك السابق · ✗ غير مؤدى. الحالة تُحتسب إلى غاية الشهر الجاري.",
   months:["ينا","فبر","مار","أبر","ماي","يون","يول","غشت","شتن","أكت","نون","دجن"],
-  th:{apt:"الشقة", nom:"المالك", paye:"المؤدى", statut:"الحالة", date:"التاريخ", cat:"الفئة", desc:"البيان", mnt:"المبلغ", mode:"الأداء", total:"المجموع"},
+  th:{apt:"الشقة", nom:"المالك", paye:"المحصل (السنديك الجديد)", statut:"الحالة", date:"التاريخ", cat:"الفئة", desc:"البيان", mnt:"المبلغ", mode:"الأداء", total:"المجموع"},
   statut:{ok:"خالص", adv:"خالص مسبقًا", part:"جزئي", bad:"غير خالص", futur:"لاحقًا"},
   retTitle:"الملاك المتأخرون 4 أشهر فأكثر",
   retMois:m=>m+" أشهر غير مؤداة", retDu:"المستحق", etage:"الطابق", abroad:"خارج الوطن",
@@ -367,6 +372,7 @@ function render(){
   const t = T();
   $("app").dir = t.dir;
   document.documentElement.lang = lang;
+  $("title").innerHTML = t.title;
   $("subtitle").textContent = t.subtitle + (STATE ? " — " + STATE.owners.length + (lang==="ar"?" شقة":" appartements") : "");
   $("langBtn").textContent = t.lang;
   $("loadTxt") && ($("loadTxt").textContent = lang==="ar" ? "جارٍ تحميل البيانات…" : "Chargement des données…");
