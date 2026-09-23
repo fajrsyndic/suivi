@@ -317,7 +317,8 @@ async function loadData(){
     const m = []; for(let k=0;k<12;k++){ const v=String(r[m1+k]||"").trim();
       m.push(v==="Oui"?"O":v==="Non"?"N":v==="Ancien"?"A":""); }
     const du = asNum(r[m1+12]); if(du && !param) param = Math.round(du/12);
-    cot.push({an, apt:+apt.replace(/\D+/g,""), m});
+    const nomLigne = String(r[aptC+1]||"").trim();
+    cot.push({an, apt:+apt.replace(/\D+/g,""), nom:nomLigne, m});
   }
   if(!param) param = 150;
   // dépenses : lignes dont la 1re cellule est une date
@@ -454,7 +455,7 @@ function render(){
   $("cotTable").innerHTML =
     `<tr><th>${t.th.apt}</th><th>${t.th.nom}</th>${t.months.map(m=>`<th style="text-align:center">${m}</th>`).join("")}<th>${t.th.paye}</th><th>${t.th.statut}</th></tr>`+
     (rows.length ? rows.map(r=>{ const s=rowStats(r); const o=oba[r.apt]||{nom:"?"};
-      return `<tr><td class="num">${r.apt}</td><td style="white-space:nowrap">${esc(o.nom)}</td>`+
+      return `<tr><td class="num">${r.apt}</td><td style="white-space:nowrap">${esc(r.nom || o.nom)}</td>`+
         r.m.map(v=>`<td><span class="mcell ${cls(v)}">${sym(v)}</span></td>`).join("")+
         `<td class="num">${fmt(s.paid*STATE.param)}</td><td>${stPill(s.st)}</td></tr>`; }).join("")
      : `<tr><td colspan="16" class="empty">${t.empty}</td></tr>`);
