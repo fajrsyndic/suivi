@@ -97,6 +97,7 @@ tr:last-child td{border-bottom:none;}
 .tsrow.yhead{font-weight:700; background:var(--grey-bg); padding-inline:10px; border-radius:8px; border-bottom:none; margin-block-start:6px;}
 .tsrow.sub{padding-inline-start:22px; padding-block:3.5px; font-size:12.5px; color:var(--muted); border-bottom:1px dashed var(--line);}
 .tsrow.sub .v{font-weight:400; font-size:12.5px;}
+td.ygrp{font-weight:700; color:var(--fajr); background:var(--grey-bg); padding:6px 10px; font-size:13px;}
 .note{font-size:12.5px; color:var(--muted); background:var(--grey-bg); border-radius:9px; padding:9px 12px; margin-block-start:10px;}
 .banner{border-radius:10px; padding:10px 14px; font-size:13px; font-weight:500; margin-block:4px 12px;}
 .banner.err{background:var(--warn-bg); color:var(--warn-ink);}
@@ -217,7 +218,7 @@ fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
   title:'Espace Syndic <span class="resid">· Immeuble A — Résidence AL FAJR</span>',
   subtitle:"Suivi transparent de la copropriété", lang:"العربية",
   tabs:{apercu:"Aperçu", cotisations:"Cotisations", retards:"Retards 4 mois et +", depenses:"Dépenses", tresorerie:"Trésorerie"},
-  kpi:{enc:"Cotisations encaissées", imp:"Impayés à ce jour", dep:"Dépenses de l'année", solde:"Solde de trésorerie",
+  kpi:{enc:"Cotisations encaissées", imp:"Impayés à ce jour", dep:"Dépenses de l'année", encAll:"Cotisations encaissées (toutes années)", impAll:"Impayés (toutes années)", depAll:"Dépenses (toutes années)", solde:"Solde de trésorerie",
        ajour:"À jour ou en avance", ret4:"En retard de 4 mois et +"},
   of:n=>"sur "+n,
   chartTitle:"Encaissements et dépenses par année", encaisse:"Encaissé", depense:"Dépenses",
@@ -237,6 +238,7 @@ fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
        init:"Solde initial (reçu de l'ancien syndic)", cotY:y=>"Cotisations encaissées "+y,
        autresE:"Autres recettes", depY:y=>"Dépenses "+y, autresS:"Autres sorties", total:"Solde actuel"},
   nbApt:n=>n+(n>1?" appts":" appt"),
+  allY:"Toutes les années",
   cats:{"Nettoyage":"Nettoyage","Électricité":"Électricité","Eau":"Eau","Ascenseur":"Ascenseur","Sécurité":"Sécurité","Entretien":"Entretien","Réparation":"Réparation","Travaux":"Travaux","Assurance":"Assurance","Autres":"Autres"},
   modes:{"Espèces":"Espèces","Chèque":"Chèque","Virement":"Virement","Carte bancaire":"Carte bancaire"},
   err:"Impossible de lire le tableur du syndic pour le moment — vérifiez votre connexion, puis touchez ↻ pour réessayer.",
@@ -248,7 +250,7 @@ ar:{dir:"rtl", locale:"ar-MA", cur:" درهم",
   title:'فضاء السنديك <span class="resid">· عمارة A — إقامة الفجر</span>',
   subtitle:"تتبع شفاف لتدبير العمارة", lang:"Français",
   tabs:{apercu:"لمحة عامة", cotisations:"الاشتراكات", retards:"المتأخرون 4 أشهر فأكثر", depenses:"المصاريف", tresorerie:"الخزينة"},
-  kpi:{enc:"الاشتراكات المحصلة", imp:"غير المؤدى إلى اليوم", dep:"مصاريف السنة", solde:"رصيد الخزينة",
+  kpi:{enc:"الاشتراكات المحصلة", imp:"غير المؤدى إلى اليوم", dep:"مصاريف السنة", encAll:"الاشتراكات المحصلة (كل السنوات)", impAll:"غير المؤدى (كل السنوات)", depAll:"المصاريف (كل السنوات)", solde:"رصيد الخزينة",
        ajour:"خالصون أو مسبقًا", ret4:"متأخرون 4 أشهر فأكثر"},
   of:n=>"من "+n,
   chartTitle:"التحصيلات والمصاريف حسب السنة", encaisse:"المحصل", depense:"المصاريف",
@@ -268,6 +270,7 @@ ar:{dir:"rtl", locale:"ar-MA", cur:" درهم",
        init:"الرصيد الأولي (من السنديك السابق)", cotY:y=>"الاشتراكات المحصلة "+y,
        autresE:"مداخيل أخرى", depY:y=>"مصاريف "+y, autresS:"مصاريف أخرى", total:"الرصيد الحالي"},
   nbApt:n=>n+" شقة",
+  allY:"كل السنوات",
   cats:{"Nettoyage":"النظافة","Électricité":"الكهرباء","Eau":"الماء","Ascenseur":"المصعد","Sécurité":"الحراسة","Entretien":"الصيانة","Réparation":"الإصلاح","Travaux":"الأشغال","Assurance":"التأمين","Autres":"أخرى"},
   modes:{"Espèces":"نقدًا","Chèque":"شيك","Virement":"تحويل بنكي","Carte bancaire":"بطاقة بنكية"},
   err:"تعذّرت قراءة سجل السنديك حاليًا — تحقق من الاتصال ثم اضغط ↻ لإعادة المحاولة.",
@@ -372,6 +375,10 @@ const totDep = () => STATE.dep.reduce((s,d)=>s+d.mnt,0);
 const autresE = () => STATE.autres.reduce((s,a)=>s+a.ent,0);
 const autresS = () => STATE.autres.reduce((s,a)=>s+a.sor,0);
 const solde = () => STATE.init + totEnc() + autresE() - totDep() - autresS();
+const encSel = () => year==="all" ? totEnc() : encYear(year);
+const impSel = () => year==="all" ? yearsAll().reduce((s,y)=>s+impYear(y),0) : impYear(year);
+const depSel = () => year==="all" ? totDep() : depYear(year);
+const inSel  = y => year==="all" || y===year;
 
 // ---------------- rendu
 function render(){
@@ -387,8 +394,11 @@ function render(){
   if(!STATE){ $("foot").textContent=""; return; }
 
   const years = yearsAll();
-  if(!years.includes(year)) year = years.includes(NOWY) ? NOWY : years[years.length-1];
-  $("yearSel").innerHTML = years.map(y=>`<option value="${y}" ${y===year?"selected":""}>${y}</option>`).join("");
+  if(year!=="all" && !years.includes(year)) year = years.includes(NOWY) ? NOWY : years[years.length-1];
+  $("yearSel").innerHTML = years.map(y=>`<option value="${y}" ${y===year?"selected":""}>${y}</option>`).join("")+
+    `<option value="all" ${year==="all"?"selected":""}>${t.allY}</option>`;
+  const yLbl = year==="all" ? t.allY : year;
+  const ySt = year==="all" ? (years.includes(NOWY) ? NOWY : years[years.length-1]) : year;
   const ret = retards();
   $("tabs").innerHTML = TABS.map(k =>
     `<button class="tab" role="tab" id="tab-${k}" aria-selected="${k===tab}" data-k="${k}">${t.tabs[k]}${
@@ -402,15 +412,15 @@ function render(){
   $("payBar").hidden = !(ret.length && !payHidden && tab!=="retards");
   $("payTxt").innerHTML = t.payMsg(ret.length, fmt(STATE.param));
   $("paySee").textContent = t.paySee;
-  const rowsY = STATE.cot.filter(r=>r.an===year);
+  const rowsY = STATE.cot.filter(r=>r.an===ySt);
   const okN = rowsY.filter(r=>["ok","adv"].includes(rowStats(r).st)).length;
   const nOwn = STATE.owners.length, s = solde();
   $("kpis").innerHTML = [
-    {l:`${t.kpi.enc} ${year}`, v:fmt(encYear(year)), c:"ok"},
-    {l:`${t.kpi.imp} (${year})`, v:fmt(impYear(year)), c: impYear(year)>0?"bad":"ok"},
-    {l:`${t.kpi.dep} ${year}`, v:fmt(depYear(year)), c:""},
+    {l: year==="all" ? t.kpi.encAll : `${t.kpi.enc} ${year}`, v:fmt(encSel()), c:"ok"},
+    {l: year==="all" ? t.kpi.impAll : `${t.kpi.imp} (${year})`, v:fmt(impSel()), c: impSel()>0?"bad":"ok"},
+    {l: year==="all" ? t.kpi.depAll : `${t.kpi.dep} ${year}`, v:fmt(depSel()), c:""},
     {l:t.kpi.solde, v:fmt(s), c: s<0?"bad":"ok"},
-    {l:t.kpi.ajour+" ("+year+")", v:`${okN} <small>${t.of(nOwn)}</small>`, c:"ok"},
+    {l:t.kpi.ajour+" ("+ySt+")", v:`${okN} <small>${t.of(nOwn)}</small>`, c:"ok"},
     {l:t.kpi.ret4, v:`${ret.length} <small>${t.of(nOwn)}</small>`, c: ret.length?"bad":"ok"},
   ].map(k=>`<div class="kpi ${k.c}"><div class="lab">${k.l}</div><div class="val">${k.v}</div></div>`).join("");
 
@@ -439,9 +449,9 @@ function render(){
   svg+="</svg>";
   $("yearChart").innerHTML = svg;
 
-  $("catTitle").textContent = `${t.catTitle} — ${year}`;
+  $("catTitle").textContent = `${t.catTitle} — ${yLbl}`;
   const byCat = {};
-  STATE.dep.filter(d=>d.date.getFullYear()===year).forEach(d=>{ byCat[d.cat]=(byCat[d.cat]||0)+d.mnt; });
+  STATE.dep.filter(d=>inSel(d.date.getFullYear())).forEach(d=>{ byCat[d.cat]=(byCat[d.cat]||0)+d.mnt; });
   const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   const cmax = Math.max(1,...cats.map(c=>c[1]));
   $("catBars").innerHTML = cats.length ? cats.map(([c,v])=>
@@ -450,20 +460,28 @@ function render(){
     `<span class="v">${fmt(v)}</span></div>`).join("")
     : `<div class="empty">${t.empty}</div>`;
 
-  $("cotTitle").textContent = `${t.cotTitle} — ${year}`;
+  $("cotTitle").textContent = `${t.cotTitle} — ${yLbl}`;
   $("cotNote").textContent = t.cotNote;
   const stPill = st => `<span class="pill p-${({ok:"ok",adv:"adv",part:"part",bad:"bad",futur:"grey"})[st]}">${t.statut[st]}</span>`;
   const sym = v => v==="O"?"✓":v==="A"?(lang==="ar"?"ق":"A"):v==="N"?"✗":"";
   const cls = v => v==="O"?"mO":v==="A"?"mA":v==="N"?"mN":"mE";
   const oba = ownerByApt();
-  const rows = STATE.cot.filter(r=>r.an===year).sort((a,b)=>a.apt-b.apt);
-  $("cotTable").innerHTML =
-    `<tr><th>${t.th.apt}</th><th>${t.th.nom}</th>${t.months.map(m=>`<th style="text-align:center">${m}</th>`).join("")}<th>${t.th.paye}</th><th>${t.th.statut}</th></tr>`+
-    (rows.length ? rows.map(r=>{ const s=rowStats(r); const o=oba[r.apt]||{nom:"?"};
+  const rows = STATE.cot.filter(r=>inSel(r.an)).sort((a,b)=>(a.an-b.an)||(a.apt-b.apt));
+  const rowHtml = r => { const s=rowStats(r); const o=oba[r.apt]||{nom:"?"};
       return `<tr><td class="num">${r.apt}</td><td style="white-space:nowrap">${esc(r.nom || o.nom)}</td>`+
         r.m.map(v=>`<td><span class="mcell ${cls(v)}">${sym(v)}</span></td>`).join("")+
-        `<td class="num">${fmt(s.paid*STATE.param)}</td><td>${stPill(s.st)}</td></tr>`; }).join("")
-     : `<tr><td colspan="16" class="empty">${t.empty}</td></tr>`);
+        `<td class="num">${fmt(s.paid*STATE.param)}</td><td>${stPill(s.st)}</td></tr>`; };
+  let cotBody = "";
+  if(rows.length){
+    if(year==="all"){
+      let cur = null;
+      rows.forEach(r=>{ if(r.an!==cur){ cur=r.an;
+        cotBody += `<tr><td colspan="17" class="ygrp">${cur}</td></tr>`; }
+        cotBody += rowHtml(r); });
+    } else cotBody = rows.map(rowHtml).join("");
+  } else cotBody = `<tr><td colspan="16" class="empty">${t.empty}</td></tr>`;
+  $("cotTable").innerHTML =
+    `<tr><th>${t.th.apt}</th><th>${t.th.nom}</th>${t.months.map(m=>`<th style="text-align:center">${m}</th>`).join("")}<th>${t.th.paye}</th><th>${t.th.statut}</th></tr>`+cotBody;
 
   $("retTitle").textContent = t.retTitle;
   $("retNote").textContent = t.retNote;
@@ -474,8 +492,8 @@ function render(){
     `<div class="ramt"><div class="a">${fmt(x.mnt)}</div><div class="m">${t.retDu}</div></div></div>`).join("")
     : `<div class="empty">${t.retEmpty}</div>`;
 
-  $("depTitle").textContent = `${t.depTitle} — ${year}`;
-  const deps = STATE.dep.filter(d=>d.date.getFullYear()===year);
+  $("depTitle").textContent = `${t.depTitle} — ${yLbl}`;
+  const deps = STATE.dep.filter(d=>inSel(d.date.getFullYear()));
   const dtot = deps.reduce((s,d)=>s+d.mnt,0);
   $("depTable").innerHTML =
     `<tr><th>${t.th.date}</th><th>${t.th.cat}</th><th>${t.th.desc}</th><th>${t.th.mnt}</th><th>${t.th.mode}</th></tr>`+
@@ -527,7 +545,7 @@ $("langBtn").addEventListener("click", ()=>{
   try{ localStorage.setItem("es-lang", lang); }catch(e){}
   render();
 });
-$("yearSel").addEventListener("change", e=>{ year = +e.target.value; render(); });
+$("yearSel").addEventListener("change", e=>{ year = e.target.value==="all" ? "all" : +e.target.value; render(); });
 $("refBtn").addEventListener("click", ()=>boot());
 $("paySee").addEventListener("click", ()=>{
   tab = "retards";
