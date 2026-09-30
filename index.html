@@ -94,6 +94,9 @@ tr:last-child td{border-bottom:none;}
 .tsrow .v{font-variant-numeric:tabular-nums; font-weight:500; white-space:nowrap;}
 .v.plus{color:var(--ok-ink);} .v.minus{color:var(--bad-ink);}
 .tsrow.total{font-weight:700; border-top:2px solid var(--line);}
+.tsrow.yhead{font-weight:700; background:var(--grey-bg); padding-inline:10px; border-radius:8px; border-bottom:none; margin-block-start:6px;}
+.tsrow.sub{padding-inline-start:22px; padding-block:3.5px; font-size:12.5px; color:var(--muted); border-bottom:1px dashed var(--line);}
+.tsrow.sub .v{font-weight:400; font-size:12.5px;}
 .note{font-size:12.5px; color:var(--muted); background:var(--grey-bg); border-radius:9px; padding:9px 12px; margin-block-start:10px;}
 .banner{border-radius:10px; padding:10px 14px; font-size:13px; font-weight:500; margin-block:4px 12px;}
 .banner.err{background:var(--warn-bg); color:var(--warn-ink);}
@@ -233,6 +236,7 @@ fr:{dir:"ltr", locale:"fr-MA", cur:" DH",
   tso:{ent:"Total des entrées", sor:"Total des sorties", solde:"Solde actuel",
        init:"Solde initial (reçu de l'ancien syndic)", cotY:y=>"Cotisations encaissées "+y,
        autresE:"Autres recettes", depY:y=>"Dépenses "+y, autresS:"Autres sorties", total:"Solde actuel"},
+  nbApt:n=>n+(n>1?" appts":" appt"),
   cats:{"Nettoyage":"Nettoyage","Électricité":"Électricité","Eau":"Eau","Ascenseur":"Ascenseur","Sécurité":"Sécurité","Entretien":"Entretien","Réparation":"Réparation","Travaux":"Travaux","Assurance":"Assurance","Autres":"Autres"},
   modes:{"Espèces":"Espèces","Chèque":"Chèque","Virement":"Virement","Carte bancaire":"Carte bancaire"},
   err:"Impossible de lire le tableur du syndic pour le moment — vérifiez votre connexion, puis touchez ↻ pour réessayer.",
@@ -263,6 +267,7 @@ ar:{dir:"rtl", locale:"ar-MA", cur:" درهم",
   tso:{ent:"مجموع المداخيل", sor:"مجموع المصاريف", solde:"الرصيد الحالي",
        init:"الرصيد الأولي (من السنديك السابق)", cotY:y=>"الاشتراكات المحصلة "+y,
        autresE:"مداخيل أخرى", depY:y=>"مصاريف "+y, autresS:"مصاريف أخرى", total:"الرصيد الحالي"},
+  nbApt:n=>n+" شقة",
   cats:{"Nettoyage":"النظافة","Électricité":"الكهرباء","Eau":"الماء","Ascenseur":"المصعد","Sécurité":"الحراسة","Entretien":"الصيانة","Réparation":"الإصلاح","Travaux":"الأشغال","Assurance":"التأمين","Autres":"أخرى"},
   modes:{"Espèces":"نقدًا","Chèque":"شيك","Virement":"تحويل بنكي","Carte bancaire":"بطاقة بنكية"},
   err:"تعذّرت قراءة سجل السنديك حاليًا — تحقق من الاتصال ثم اضغط ↻ لإعادة المحاولة.",
@@ -488,13 +493,20 @@ function render(){
     {l:t.tso.solde, v:fmt(solde()), c:solde()<0?"bad":"ok"},
   ].map(k=>`<div class="kpi ${k.c}"><div class="lab">${k.l}</div><div class="val">${k.v}</div></div>`).join("");
   $("tsoTitle").textContent = t.tsoTitle;
-  let dRows = [[t.tso.init, STATE.init, +1]];
-  years.forEach(y=>{ const e=encYear(y); if(e||y<=NOWY) dRows.push([t.tso.cotY(y), e, +1]); });
-  if (autresE()) dRows.push([t.tso.autresE, autresE(), +1]);
-  years.forEach(y=>{ const d=depYear(y); if(d) dRows.push([t.tso.depY(y), d, -1]); });
-  if (autresS()) dRows.push([t.tso.autresS, autresS(), -1]);
-  $("tsoDetail").innerHTML = dRows.map(([l,v,sg])=>
-    `<div class="tsrow"><span>${l}</span><span class="v ${sg>0?"plus":"minus"}">${sg>0?"+":"−"} ${fmt(v)}</span></div>`).join("")+
+  const trow = (cls,l,v,sg)=>`<div class="tsrow ${cls}"><span>${l}</span><span class="v ${sg>0?"plus":"minus"}">${sg>0?"+":"−"} ${fmt(v)}</span></div>`;
+  let html = trow("", t.tso.init, STATE.init, +1);
+  years.forEach(y=>{
+    const cnt = Array(12).fill(0);
+    STATE.cot.filter(r=>r.an===y).forEach(r=>r.m.forEach((v,m)=>{ if(v==="O") cnt[m]++; }));
+    const tot = cnt.reduce((a,b)=>a+b,0)*STATE.param;
+    if(!tot) return;
+    html += trow("yhead", t.tso.cotY(y), tot, +1);
+    cnt.forEach((n,m)=>{ if(n>0) html += trow("sub", `${t.months[m]} · ${t.nbApt(n)}`, n*STATE.param, +1); });
+  });
+  if (autresE()) html += trow("", t.tso.autresE, autresE(), +1);
+  years.forEach(y=>{ const d=depYear(y); if(d) html += trow("", t.tso.depY(y), d, -1); });
+  if (autresS()) html += trow("", t.tso.autresS, autresS(), -1);
+  $("tsoDetail").innerHTML = html +
     `<div class="tsrow total"><span>${t.tso.total}</span><span class="v ${solde()<0?"minus":"plus"}">${fmt(solde())}</span></div>`;
   $("autresCard").hidden = !STATE.autres.length;
   $("autresList").innerHTML = STATE.autres.map(a=>{
